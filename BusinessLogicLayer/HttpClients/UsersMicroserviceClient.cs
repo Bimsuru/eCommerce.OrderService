@@ -33,7 +33,13 @@ public class UsersMicroserviceClient
             // if any request faliers
             else
             {
-                throw new HttpRequestException($"Http request failed with status code {response.StatusCode}");
+                // throw new HttpRequestException($"Http request failed with status code {response.StatusCode}");
+                return new UserDTO{
+                    UserID = Guid.Empty,
+                    Email = "temporarily unavailable",
+                    PersonName = "temporarily unavailable",
+                    Gender = "temporarily unavailable",
+                };
             }
         }
 
