@@ -12,7 +12,7 @@ public class ProductsMicroserviceClient
         _httpClient = httpClient;
     }
 
-    public async Task<ProductDTO> GetProductAsync(Guid id)
+    public async Task<ProductDTO?> GetProductAsync(Guid id)
     {
         var response = await _httpClient.GetAsync($"/api/v1/products/{id}");
 

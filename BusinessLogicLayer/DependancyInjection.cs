@@ -1,5 +1,6 @@
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.Mappers;
+using eCommerce.OrdersMicroservice.BusinessLogicLayer.Policies;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.ServiceContracts;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.Services;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.ServicesHelperMethod;
@@ -18,6 +19,7 @@ public static class DependancyInjection
       services.AddValidatorsFromAssemblyContaining<OrderAddRequestValidator>();
       services.AddScoped<IOrderService, OrderService>();
       services.AddScoped<ValidationHelper>();
+      services.AddTransient<IUserMicroservicePolicy, UserMicroservicePolicy>();
       
       return services;
    }

@@ -113,14 +113,7 @@ public class OrderService : IOrderService
         {
             foreach (var order in ordersResponse)
             {
-                // Get UserDTO and bind orderReponse
-                var userDTO = await _usersMicroserviceClient.GetUserAsync(order!.UserID);
-
-                if (userDTO == null)
-                    continue;
-
-                _mapper.Map<UserDTO, OrderResponse>(userDTO, order);
-
+               
                 foreach (var getOneOrderItem in order!.OrderItems!)
                 {
                     // get the ProductDTO
@@ -131,6 +124,14 @@ public class OrderService : IOrderService
 
                     _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, getOneOrderItem);
                 }
+
+                 // Get UserDTO and bind orderReponse
+                var userDTO = await _usersMicroserviceClient.GetUserAsync(order!.UserID);
+
+                if (userDTO == null)
+                    continue;
+
+                _mapper.Map<UserDTO, OrderResponse>(userDTO, order);
             }
         }
         return ordersResponse!.ToList();
