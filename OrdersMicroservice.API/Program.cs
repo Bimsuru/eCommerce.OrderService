@@ -2,9 +2,6 @@ using eCommerce.OrdersMicroService.API.Middleware;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer;
 using eCommerce.OrdersMicroservice.DataAccessLayer;
 using FluentValidation.AspNetCore;
-using eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients;
-using Polly;
-using eCommerce.OrdersMicroservice.BusinessLogicLayer.Policies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add DI services DAL and BLL
-builder.Services.AddBusinessLayer();
+builder.Services.AddBusinessLayer(builder.Configuration);
 builder.Services.AddDataAccessLayer(builder.Configuration);
 
 // Add Controllers
@@ -22,18 +19,6 @@ builder.Services.AddControllers();
 
 // FluentValidations
 builder.Services.AddFluentValidationAutoValidation();
-
-// Add HttpClient with communication with microservices
-builder.Services.AddHttpClient<UsersMicroserviceClient>(
-client =>
-{
-  client.BaseAddress = new Uri($"http://{builder.Configuration["UsersMicroserviceName"]}:{builder.Configuration["UsersMicroservicePort"]}");
-}).AddPolicyHandler(builder.Services.BuildServiceProvider().GetRequiredService<IUserMicroservicePolicy>().GetRetryPloicy());
-
-builder.Services.AddHttpClient<ProductsMicroserviceClient>(client =>
-{
-  client.BaseAddress = new Uri($"http://{builder.Configuration["ProductsMicroserviceName"]}:{builder.Configuration["ProductsMicroservicePort"]}");
-});
 
 //Cors
 builder.Services.AddCors(options =>
