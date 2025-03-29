@@ -14,7 +14,10 @@
         "UsersMicroserviceName": "localhost",
         "UsersMicroservicePort": "7050",
         "ProductsMicroserviceName": "localhost",
-        "ProductsMicroservicePort": "6000"
+        "ProductsMicroservicePort": "6000",
+        "REDIS_HOST": "localhost",
+        "REDIS_PORT": "6379",
+
       }
     },
     "https": {
@@ -31,7 +34,9 @@
         "UsersMicroserviceName": "localhost",
         "UsersMicroservicePort": "7050",
         "ProductsMicroserviceName": "localhost",
-        "ProductsMicroservicePort": "6000"
+        "ProductsMicroservicePort": "6000",
+        "REDIS_HOST": "localhost",
+        "REDIS_PORT": "6379",
       }
     },
     "IIS Express": {
@@ -46,7 +51,9 @@
         "UsersMicroserviceName": "localhost",
         "UsersMicroservicePort": "7050",
         "ProductsMicroserviceName": "localhost",
-        "ProductsMicroservicePort": "6000"
+        "ProductsMicroservicePort": "6000",
+        "REDIS_HOST": "localhost",
+        "REDIS_PORT": "6379",
       }
     }
   },

@@ -1,8 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using BusinessLogicLayer.HttpClients;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Polly.Bulkhead;
 
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients;
@@ -11,16 +14,31 @@ public class ProductsMicroserviceClient : IProductsMicroserviceClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<ProductsMicroserviceClient> _logger;
-    public ProductsMicroserviceClient(HttpClient httpClient, ILogger<ProductsMicroserviceClient> logger)
+    private readonly IDistributedCache _distributedCache;
+    public ProductsMicroserviceClient(HttpClient httpClient, ILogger<ProductsMicroserviceClient> logger, IDistributedCache distributedCache)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _distributedCache = distributedCache;
     }
 
     public async Task<ProductDTO?> GetProductAsync(Guid id)
     {
         try
         {
+            // Create cache key
+            string cacheKey = $"product: {id}";
+
+            // Get product in cache
+            string? cacheRes = await _distributedCache.GetStringAsync(cacheKey);
+
+            // Not null then deseralized productcache josn object into productDTO
+            if (cacheRes != null)
+            {
+                ProductDTO? productCache = JsonSerializer.Deserialize<ProductDTO>(cacheRes);
+                return productCache;
+            }
+
             var response = await _httpClient.GetAsync($"/api/v1/products/{id}");
 
             // Check response IsSuccess or not
@@ -48,6 +66,17 @@ public class ProductsMicroserviceClient : IProductsMicroserviceClient
             {
                 return null;
             }
+
+            // write the product into cache
+            string? productJson = JsonSerializer.Serialize(product);
+
+            DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
+                                                        .SetAbsoluteExpiration(TimeSpan.FromMicroseconds(300))
+                                                        .SetSlidingExpiration(TimeSpan.FromMicroseconds(100));
+
+            options.SetAbsoluteExpiration(TimeSpan.FromMicroseconds(300));
+
+            await _distributedCache.SetStringAsync(productJson, cacheKey, options);
 
             return product;
         }

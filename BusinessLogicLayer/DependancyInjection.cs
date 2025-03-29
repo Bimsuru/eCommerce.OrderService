@@ -36,6 +36,10 @@ public static class DependancyInjection
          client.BaseAddress = new Uri($"http://{configuration["ProductsMicroserviceName"]}:{configuration["ProductsMicroservicePort"]}");
       }).AddPolicyHandler(services.BuildServiceProvider().GetRequiredService<IProductMicroservicePolicy>().GetCombinedPolicy());
 
+      services.AddStackExchangeRedisCache(options => {
+         options.Configuration = $"{configuration["REDIS_HOST"]}:{configuration["REDIS_PORT"]}";
+      });
+      
       return services;
    }
 }
