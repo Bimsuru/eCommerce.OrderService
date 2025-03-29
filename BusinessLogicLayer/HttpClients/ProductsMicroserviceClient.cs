@@ -5,7 +5,6 @@ using BusinessLogicLayer.HttpClients;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Polly.Bulkhead;
 
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients;
@@ -27,6 +26,8 @@ public class ProductsMicroserviceClient : IProductsMicroserviceClient
         try
         {
             // Create cache key
+            // cache store products like this --> key: "product:{id}" 
+            // value: {"productName": "", "catogory":"",}
             string cacheKey = $"product: {id}";
 
             // Get product in cache
@@ -53,6 +54,16 @@ public class ProductsMicroserviceClient : IProductsMicroserviceClient
                 {
                     throw new HttpRequestException("Bad request", null, HttpStatusCode.BadRequest);
                 }
+                else if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                {
+                    var productFallbackRes = await response.Content.ReadFromJsonAsync<ProductDTO>();
+
+                    if(productFallbackRes == null)
+                    {
+                        throw new NotImplementedException("Fallback was not implemented");
+                    }
+                    return productFallbackRes;
+                }
                 else
                 {
                     throw new HttpRequestException($"Http request failed with status code {response.StatusCode}");
@@ -73,8 +84,6 @@ public class ProductsMicroserviceClient : IProductsMicroserviceClient
             DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
                                                         .SetAbsoluteExpiration(TimeSpan.FromMicroseconds(300))
                                                         .SetSlidingExpiration(TimeSpan.FromMicroseconds(100));
-
-            options.SetAbsoluteExpiration(TimeSpan.FromMicroseconds(300));
 
             await _distributedCache.SetStringAsync(productJson, cacheKey, options);
 
