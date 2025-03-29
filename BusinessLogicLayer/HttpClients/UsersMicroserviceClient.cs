@@ -1,6 +1,8 @@
 
 using System.Net.Http.Json;
+using System.Text.Json;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
@@ -11,17 +13,31 @@ public class UsersMicroserviceClient : IUsersMicroserviceClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<UsersMicroserviceClient> _logger;
+    private readonly IDistributedCache _distributedCache;
 
-    public UsersMicroserviceClient(HttpClient httpClient, ILogger<UsersMicroserviceClient> logger)
+    public UsersMicroserviceClient(HttpClient httpClient, ILogger<UsersMicroserviceClient> logger, IDistributedCache distributedCache)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _distributedCache = distributedCache;
     }
 
     public async Task<UserDTO?> GetUserAsync(Guid id)
     {
         try
         {
+            // create cacheKey 
+            string? cacheKey = $"user:{id}";
+
+            // user's data check in cache 
+            var cacheUserRes = await _distributedCache.GetStringAsync(cacheKey);
+
+            if (cacheUserRes != null)
+            {
+                var userDTO = JsonSerializer.Deserialize<UserDTO>(cacheUserRes);
+                return userDTO;
+            }
+
             var response = await _httpClient.GetAsync($"/api/v1/users/{id}");
 
             // IsSuccessStatusCode false then inner if block (400, 500)
@@ -37,17 +53,23 @@ public class UsersMicroserviceClient : IUsersMicroserviceClient
                 {
                     throw new HttpRequestException("Bad request", null, System.Net.HttpStatusCode.BadRequest);
                 }
-                // if any request faliers
-                else
+
+                // fallback policy return 503 then add fallback data into this
+                else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
                 {
-                    // throw new HttpRequestException($"Http request failed with status code {response.StatusCode}");
                     return new UserDTO
                     {
                         UserID = Guid.Empty,
-                        Email = "temporarily unavailable",
-                        PersonName = "temporarily unavailable",
-                        Gender = "temporarily unavailable",
+                        Email = "temporarily unavailable (fallback)",
+                        PersonName = "temporarily unavailable (fallback)",
+                        Gender = "temporarily unavailable (fallback)",
                     };
+                }
+
+                // if any request faliers
+                else
+                {
+                    throw new HttpRequestException($"Http request failed with status code {response.StatusCode}");
                 }
             }
 
@@ -58,6 +80,19 @@ public class UsersMicroserviceClient : IUsersMicroserviceClient
             {
                 throw new ArgumentException("Invalid User Id");
             }
+
+            // user convert into json object
+            string? userJson = JsonSerializer.Serialize(user);
+
+            // add DistributedCacheEntryOptions
+            DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
+                                                        .SetAbsoluteExpiration(DateTimeOffset.UtcNow.AddMinutes(5))
+                                                        .SetSlidingExpiration(TimeSpan.FromMinutes(3));
+
+
+            // write userDTO into cache
+            await _distributedCache.SetStringAsync(cacheKey, userJson, options);
+
 
             return user;
         }

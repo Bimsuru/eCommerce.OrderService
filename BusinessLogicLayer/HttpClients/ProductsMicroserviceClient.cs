@@ -56,12 +56,15 @@ public class ProductsMicroserviceClient : IProductsMicroserviceClient
                 }
                 else if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
                 {
-                    var productFallbackRes = await response.Content.ReadFromJsonAsync<ProductDTO>();
-
-                    if(productFallbackRes == null)
-                    {
-                        throw new NotImplementedException("Fallback was not implemented");
-                    }
+                    // Fallback triggered: request failed, dummy data returning
+                    
+                    ProductDTO productFallbackRes = new ProductDTO(
+                     ProductID: Guid.Empty,
+                     ProductName: "temporarily unavailable (fallback)",
+                     Category: "temporarily unavailable (fallback)",
+                     UnitPrice: 0,
+                     QuantityInStock: 0
+                    );
                     return productFallbackRes;
                 }
                 else

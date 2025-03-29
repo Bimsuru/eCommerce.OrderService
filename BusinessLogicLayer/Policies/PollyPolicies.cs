@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Bulkhead;
 using Polly.CircuitBreaker;
+using Polly.Fallback;
 using Polly.Timeout;
 
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.Policies;
@@ -45,6 +46,20 @@ public class PollyPolicies : IPollyPolicies
 
               }
             );
+
+        return policy;
+    }
+
+    public IAsyncPolicy<HttpResponseMessage> GetFallbackPolicy()
+    {
+        AsyncFallbackPolicy<HttpResponseMessage> policy = Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+            .FallbackAsync(async (context) =>
+            {
+                _logger.LogWarning("Fallback triggered: request failed, dummy data returning");
+
+                var response = new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable);
+                return response;
+            });
 
         return policy;
     }

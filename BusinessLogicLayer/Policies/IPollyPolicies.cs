@@ -8,4 +8,5 @@ public interface IPollyPolicies
     IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy(int handledEventsAllowedBeforeBreaking, TimeSpan durationOfBreak);
     IAsyncPolicy<HttpResponseMessage> GetTimeoutPolicy(TimeSpan timeout);
     IAsyncPolicy<HttpResponseMessage> GetBulkheadIsolationPolicy(int maxParallelization, int maxQueuingActions);
+    IAsyncPolicy<HttpResponseMessage> GetFallbackPolicy();
 }

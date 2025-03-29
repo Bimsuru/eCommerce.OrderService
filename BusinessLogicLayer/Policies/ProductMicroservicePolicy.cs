@@ -19,36 +19,11 @@ public class ProductMicroservicePolicy : IProductMicroservicePolicy
         _logger = logger;
         _pollyPolicies = pollyPolicies;
     }
-    public IAsyncPolicy<HttpResponseMessage> GetFallbackPolicy()
-    {
-        AsyncFallbackPolicy<HttpResponseMessage> policy = Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
-            .FallbackAsync(async (context) =>
-            {
-                _logger.LogWarning("Fallback triggered: request failed, dummy data returning");
-
-                ProductDTO product = new ProductDTO(
-                    ProductID: Guid.Empty,
-                    ProductName: "temporarily unavailable (fallback)",
-                    Category: "temporarily unavailable (fallback)",
-                    UnitPrice: 0,
-                    QuantityInStock: 0
-                );
-
-                var response = new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable)
-                {
-                    Content = new StringContent(JsonSerializer.Serialize(product), Encoding.UTF8, "application/json")
-                };
-
-                return response;
-            });
-
-        return policy;
-    }
 
     public AsyncPolicyWrap<HttpResponseMessage> GetCombinedPolicy()
     {
-        var fallbackPolicy = GetFallbackPolicy();
-        var bulkheadPolicy = _pollyPolicies.GetBulkheadIsolationPolicy(2,40);
+        var fallbackPolicy = _pollyPolicies.GetFallbackPolicy();
+        var bulkheadPolicy = _pollyPolicies.GetBulkheadIsolationPolicy(2, 40);
         AsyncPolicyWrap<HttpResponseMessage> policies = Policy.WrapAsync<HttpResponseMessage>(fallbackPolicy, bulkheadPolicy);
 
         return policies;
