@@ -40,7 +40,7 @@ public class ProductsMicroserviceClient : IProductsMicroserviceClient
                 return productCache;
             }
 
-            var response = await _httpClient.GetAsync($"/api/v1/products/{id}");
+            var response = await _httpClient.GetAsync($"/gateway/products/{id}");
 
             // Check response IsSuccess or not
             if (!response.IsSuccessStatusCode)

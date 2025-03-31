@@ -19,7 +19,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<OrderResponse?>>> GetAllOrders(Guid? productid, DateTime? orderDate)
+    public async Task<ActionResult<List<OrderResponse?>>> GetAllOrders(Guid? productid, DateTime? orderDate, Guid? userid)
     {
         var filter = Builders<Order>.Filter.Empty;
 
@@ -27,6 +27,10 @@ public class OrderController : ControllerBase
         {
             filter &= Builders<Order>.Filter.ElemMatch(o => o.OrderItems,
                 Builders<OrderItem>.Filter.Eq(oi => oi.ProductID, productid.Value));
+        }
+        if (userid.HasValue)
+        {
+            filter = Builders<Order>.Filter.Eq(oi => oi.UserID, userid.Value);
         }
 
         if (orderDate.HasValue)

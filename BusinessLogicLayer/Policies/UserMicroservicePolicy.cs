@@ -18,7 +18,7 @@ public class UserMicroservicePolicy : IUserMicroservicePolicy
     public AsyncPolicyWrap<HttpResponseMessage> GetCombinedPolicy()
     {
         var retryPolicy = _pollyPolicies.GetRetryPolicy(5);
-        var circuitBreakerPloicy = _pollyPolicies.GetCircuitBreakerPolicy(3, TimeSpan.FromMinutes(2));
+        var circuitBreakerPloicy = _pollyPolicies.GetCircuitBreakerPolicy(3, TimeSpan.FromSeconds(20));
         var timeoutPolicy = _pollyPolicies.GetTimeoutPolicy(TimeSpan.FromMilliseconds(1500));
         var fallbackPolicy = _pollyPolicies.GetFallbackPolicy();
 

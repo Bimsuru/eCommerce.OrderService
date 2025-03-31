@@ -38,7 +38,7 @@ public class UsersMicroserviceClient : IUsersMicroserviceClient
                 return userDTO;
             }
 
-            var response = await _httpClient.GetAsync($"/api/v1/users/{id}");
+            var response = await _httpClient.GetAsync($"/gateway/users/{id}");
 
             // IsSuccessStatusCode false then inner if block (400, 500)
             if (!response.IsSuccessStatusCode)
