@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Options;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Ocelot.Provider.Polly;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +12,8 @@ builder.Services.AddSwaggerGen();
 builder.Configuration.AddJsonFile("ocelot.json", optional:false, reloadOnChange:true);
 
 // Add ocelot
-builder.Services.AddOcelot();
+builder.Services.AddOcelot()
+                .AddPolly();
 
 var app = builder.Build();
 

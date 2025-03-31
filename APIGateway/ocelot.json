@@ -1,14 +1,13 @@
 {
   "Routes": [
-
     // orders routes
     {
       "UpstreamPathTemplate": "/gateway/orders",
       "DownstreamPathTemplate": "/api/v1/orders",
       "DownstreamHostAndPorts": [
         {
-          "Host": "ordersmicroservice.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": "8000"
         }
       ],
 
@@ -18,20 +17,30 @@
         "productid": "{productid}",
         "orderDate": "{orderDate}",
         "userid": "{userid}"
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 30,
+        "Region": "orders"
       }
+
     },
     {
       "UpstreamPathTemplate": "/gateway/orders/{id}",
       "DownstreamPathTemplate": "/api/v1/orders/{id}",
       "DownstreamHostAndPorts": [
         {
-          "Host": "ordersmicroservice.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": "8000"
         }
       ],
 
       "UpstreamHttpMethod": ["Get", "Put", "Delete", "Options"],
-      "UpstreamScheme": "http"
+      "UpstreamScheme": "http",
+      
+      "FileCacheOptions": {
+        "TtlSeconds": 30,
+        "Region": "orders"
+      }
     },
 
     // products routes
@@ -40,8 +49,8 @@
       "DownstreamPathTemplate": "/api/v1/products",
       "DownstreamHostAndPorts": [
         {
-          "Host": "productsmicroservice.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": "6000"
         }
       ],
 
@@ -49,6 +58,37 @@
       "UpstreamScheme": "http",
       "AddQueriesToRequest": {
         "searchString": "{searchString}"
+      },
+
+      // add policies
+      "RetryOptions":
+      {
+        "RetryCount": 3,
+        "RetryOnServerError": true // 500 erros allowd retry 3 times
+      },
+    
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 5000
+      },
+
+      // add ratelimit 
+      "RateLimitOptions": {
+        "Limit": 3,
+        "Period": "1m",
+        "PeriodTimespan": 30,
+        "EnableRateLimiting": true,
+        "ClientWhitelist": 
+        [
+          "client1", "client2"
+        ],
+        "ClientIdHeader": "client-id"
+      },
+
+      "FileCacheOptions": {
+        "TtlSeconds": 30,
+        "Region": "products"
       }
     },
     {
@@ -56,13 +96,18 @@
       "DownstreamPathTemplate": "/api/v1/products/{id}",
       "DownstreamHostAndPorts": [
         {
-          "Host": "productsmicroservice.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": "6000"
         }
       ],
 
       "UpstreamHttpMethod": ["Get", "Put", "Delete", "Options"],
-      "UpstreamScheme": "http"
+      "UpstreamScheme": "http",
+
+      "FileCacheOptions": {
+        "TtlSeconds": 30,
+        "Region": "products"
+      }
     },
 
     // users routes
@@ -71,13 +116,18 @@
       "DownstreamPathTemplate": "/api/v1/users/{id}",
       "DownstreamHostAndPorts": [
         {
-          "Host": "usersmicroservice.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": "7050"
         }
       ],
 
       "UpstreamHttpMethod": ["Get", "Options"],
-      "UpstreamScheme": "http"
+      "UpstreamScheme": "http",
+
+      "FileCacheOptions": {
+        "TtlSeconds": 30,
+        "Region": "users"
+      }
     },
 
     // auth routes
@@ -86,26 +136,36 @@
       "DownstreamPathTemplate": "/api/v1/auth/login",
       "DownstreamHostAndPorts": [
         {
-          "Host": "usersmicroservice.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": "7050"
         }
       ],
 
       "UpstreamHttpMethod": ["Post", "Options"],
-      "UpstreamScheme": "http"
+      "UpstreamScheme": "http",
+      
+      "FileCacheOptions": {
+        "TtlSeconds": 30,
+        "Region": "users"
+      }
     },
     {
       "UpstreamPathTemplate": "/gateway/auth/register",
       "DownstreamPathTemplate": "/api/v1/auth/register",
       "DownstreamHostAndPorts": [
         {
-          "Host": "usersmicroservice.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": "7050"
         }
       ],
 
       "UpstreamHttpMethod": ["Post", "Options"],
-      "UpstreamScheme": "http"
+      "UpstreamScheme": "http",
+
+      "FileCacheOptions": {
+        "TtlSeconds": 30,
+        "Region": "users"
+      }
     }
   ],
 
