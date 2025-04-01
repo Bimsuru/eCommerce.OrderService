@@ -17,7 +17,10 @@
         "ProductsMicroservicePort": "4000",
         "REDIS_HOST": "localhost",
         "REDIS_PORT": "6379",
-
+        "RabbitMQ_UserName": "user",
+        "RabbitMQ_Password": "password",
+        "RabbitMQ_HostName": "localhost",
+        "RabbitMQ_Port": "5672"
       }
     },
     "https": {
@@ -37,6 +40,10 @@
         "ProductsMicroservicePort": "4000",
         "REDIS_HOST": "localhost",
         "REDIS_PORT": "6379",
+        "RabbitMQ_UserName": "user",
+        "RabbitMQ_Password": "password",
+        "RabbitMQ_HostName": "localhost",
+        "RabbitMQ_Port": "5672"
       }
     },
     "IIS Express": {
@@ -54,6 +61,10 @@
         "ProductsMicroservicePort": "4000",
         "REDIS_HOST": "localhost",
         "REDIS_PORT": "6379",
+        "RabbitMQ_UserName": "user",
+        "RabbitMQ_Password": "password",
+        "RabbitMQ_HostName": "localhost",
+        "RabbitMQ_Port": "5672"
       }
     }
   },
