@@ -20,7 +20,8 @@
         "RabbitMQ_UserName": "user",
         "RabbitMQ_Password": "password",
         "RabbitMQ_HostName": "localhost",
-        "RabbitMQ_Port": "5672"
+        "RabbitMQ_Port": "5672",
+        "RabbitMQ_Products_Exchange": "product.exchange" 
       }
     },
     "https": {
@@ -43,7 +44,8 @@
         "RabbitMQ_UserName": "user",
         "RabbitMQ_Password": "password",
         "RabbitMQ_HostName": "localhost",
-        "RabbitMQ_Port": "5672"
+        "RabbitMQ_Port": "5672",
+        "RabbitMQ_Products_Exchange": "product.exchange"
       }
     },
     "IIS Express": {
@@ -64,7 +66,8 @@
         "RabbitMQ_UserName": "user",
         "RabbitMQ_Password": "password",
         "RabbitMQ_HostName": "localhost",
-        "RabbitMQ_Port": "5672"
+        "RabbitMQ_Port": "5672",
+        "RabbitMQ_Products_Exchange": "product.exchange"
       }
     }
   },

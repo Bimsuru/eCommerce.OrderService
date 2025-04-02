@@ -50,7 +50,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "6000"
+          "Port": "5000"
         }
       ],
 
@@ -97,17 +97,12 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "6000"
+          "Port": "5000"
         }
       ],
 
       "UpstreamHttpMethod": ["Get", "Put", "Delete", "Options"],
-      "UpstreamScheme": "http",
-
-      "FileCacheOptions": {
-        "TtlSeconds": 30,
-        "Region": "products"
-      }
+      "UpstreamScheme": "http"
     },
 
     // users routes
