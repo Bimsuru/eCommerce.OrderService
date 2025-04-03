@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using eCommerce.ordersMicroservice.BusinessLogicLayer.RabbitMQServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
@@ -7,14 +8,14 @@ using RabbitMQ.Client.Events;
 
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.RabbitMQ;
 
-public class RabbitMQProductNameUpdateConsumer : IRabbitMQProductNameUpdateConsumer, IDisposable
+public class RabbitMQConsumer : IRabbitMQConsumer, IDisposable
 {
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private readonly IConfiguration _configuration;
-    private readonly ILogger<RabbitMQProductNameUpdateConsumer> _logger;
+    private readonly ILogger<RabbitMQConsumer> _logger;
 
-    public RabbitMQProductNameUpdateConsumer(IConfiguration configuration, ILogger<RabbitMQProductNameUpdateConsumer> logger)
+    public RabbitMQConsumer(IConfiguration configuration, ILogger<RabbitMQConsumer> logger)
     {
         _configuration = configuration;
 
@@ -35,13 +36,8 @@ public class RabbitMQProductNameUpdateConsumer : IRabbitMQProductNameUpdateConsu
         _channel = _connection.CreateModel();
         _logger = logger;
     }
-    public void Consume()
+    public void Consume(string queueName, string routingKey, string messageActionName)
     {
-        // declare queue name
-        string queueName = "orders.product.update..name.queue";
-
-        // declare routingKey AS bindingKey
-        string routingKey = "product.update.name";
 
         // producer exchange name get in env 
         string exchangeName = _configuration["RabbitMQ_Products_Exchange"]!;
@@ -52,7 +48,7 @@ public class RabbitMQProductNameUpdateConsumer : IRabbitMQProductNameUpdateConsu
 
         // bind the message into queue from exchnager
         _channel.QueueBind(queue: queueName, exchange: exchangeName, routingKey: routingKey);
-        
+
         // EventHandler
         EventingBasicConsumer consumer = new EventingBasicConsumer(_channel); // this responsible for read message from the queue
 
@@ -64,18 +60,24 @@ public class RabbitMQProductNameUpdateConsumer : IRabbitMQProductNameUpdateConsu
 
             if (message != null)
             {
-                // josn convert into productupdatename class objects
-                var productUpdateNameMessage = JsonSerializer.Deserialize<ProductUpdateNameMessage>(message);
-
-                if (productUpdateNameMessage != null)
+                // pass the specific action method into this message 
+                if (messageActionName == "update")
                 {
-                    _logger.LogInformation($"Product name updated:{productUpdateNameMessage.ProductID}, New name:{productUpdateNameMessage.NewName}");
-
+                    // josn convert into productupdatename class objects
+                    var productUpdateNameMessage = JsonSerializer.Deserialize<ProductUpdateNameMessage>(message);
+                    _logger.LogInformation($"Product name updated:{productUpdateNameMessage!.ProductID}, New name:{productUpdateNameMessage.NewName}");
                 }
+                else if (messageActionName == "delete")
+                {
+                    // josn convert into productDelete class objects
+                    var productDeleteMessage = JsonSerializer.Deserialize<ProductDeleteMessage>(message);
+                    _logger.LogInformation($"Product: {productDeleteMessage!.ProductID} is Deleted:, Deleted ProductName:{productDeleteMessage.DeletedProductName}");
+                }
+
             }
 
         };
-        
+
         _channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
 
 

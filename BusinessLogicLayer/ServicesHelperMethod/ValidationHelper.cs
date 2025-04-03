@@ -60,7 +60,7 @@ public class ValidationHelper
             var orderItemValidationResult = await orderItemvalidator.ValidateAsync(orderItem);
 
             // Add logic for checking if productID exists in product microservice
-            var product = await _productsMicroserviceClient.GetProductAsync((orderItem as dynamic).ProductID);
+            var product = await _productsMicroserviceClient.GetProductAsync((orderItem! as dynamic).ProductID);
 
             if (product == null)
             {
