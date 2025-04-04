@@ -14,13 +14,23 @@ public class RabbitMQProductNameUpdateHostService : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         // declare queue name
-        string queueName = "orders.product.update.name.queue";
+        string queueName = "orders.product.update.queue";
 
-        // declare routingKey AS bindingKey
-        string routingKey = "product.update.name";
+        // // declare routingKey AS bindingKey
+        // string routingKey = "product.update.*";
+
+        // create headers
+        var headers = new Dictionary<string, object>()
+        {
+            {"x-match", "all"},
+            {"event", "product.update"},
+            {"field", "name"},
+            {"RowCount", 1}
+        };
+
         string messageActionName = "update";
 
-        _rabbitMQConsumer.Consume(routingKey: routingKey, queueName: queueName, messageActionName: messageActionName);
+        _rabbitMQConsumer.Consume(routingKey: string.Empty, queueName: queueName, messageActionName: messageActionName, headers: headers);
 
         return Task.CompletedTask;
     }

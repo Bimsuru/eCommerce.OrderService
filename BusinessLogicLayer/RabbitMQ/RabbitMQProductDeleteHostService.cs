@@ -15,11 +15,19 @@ public class RabbitMQProductDeleteHostService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        string routingKey = "product.delete.productid";
-        string queueName = "order.product.delete.productid.queue";
+        // string routingKey = "product.#";
+        string queueName = "order.product.delete.queue";
         string messageActionName = "delete";
-        
-        _rabbitMQConsumer.Consume(routingKey: routingKey, queueName: queueName, messageActionName: messageActionName);
+
+        // create headers
+        var headers = new Dictionary<string, object>()
+        {
+            {"x-match", "all"},
+            {"event", "product.delete"},
+            {"RowCount", "1"}
+        };
+
+        _rabbitMQConsumer.Consume(routingKey: string.Empty, queueName: queueName, messageActionName: messageActionName, headers: headers);
 
         return Task.CompletedTask;
     }

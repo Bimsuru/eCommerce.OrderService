@@ -36,18 +36,18 @@ public class RabbitMQConsumer : IRabbitMQConsumer, IDisposable
         _channel = _connection.CreateModel();
         _logger = logger;
     }
-    public void Consume(string queueName, string routingKey, string messageActionName)
+    public void Consume(string queueName, string routingKey, string messageActionName, Dictionary<string, object> headers)
     {
 
         // producer exchange name get in env 
         string exchangeName = _configuration["RabbitMQ_Products_Exchange"]!;
-        _channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Direct, durable: true);
+        _channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Headers, durable: true);
 
         // create message queue
-        _channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null); // argument: x-message-ttl | x-max-length | x-expired
+        _channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: headers); // argument: x-message-ttl | x-max-length | x-expired
 
         // bind the message into queue from exchnager
-        _channel.QueueBind(queue: queueName, exchange: exchangeName, routingKey: routingKey);
+        _channel.QueueBind(queue: queueName, exchange: exchangeName, routingKey: string.Empty, arguments: headers);
 
         // EventHandler
         EventingBasicConsumer consumer = new EventingBasicConsumer(_channel); // this responsible for read message from the queue
