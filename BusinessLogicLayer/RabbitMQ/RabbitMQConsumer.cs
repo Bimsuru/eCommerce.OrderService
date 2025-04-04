@@ -1,6 +1,4 @@
 using System.Text;
-using System.Text.Json;
-using eCommerce.ordersMicroservice.BusinessLogicLayer.RabbitMQServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
@@ -13,11 +11,12 @@ public class RabbitMQConsumer : IRabbitMQConsumer, IDisposable
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private readonly IConfiguration _configuration;
-    private readonly ILogger<RabbitMQConsumer> _logger;
+    private readonly RabbitMQConsumeServicesAction _rabbitMQConsumeServicesAction;
 
-    public RabbitMQConsumer(IConfiguration configuration, ILogger<RabbitMQConsumer> logger)
+    public RabbitMQConsumer(IConfiguration configuration, ILogger<RabbitMQConsumer> logger, RabbitMQConsumeServicesAction rabbitMQConsumeServicesAction)
     {
         _configuration = configuration;
+        _rabbitMQConsumeServicesAction = rabbitMQConsumeServicesAction;
 
         string hostName = _configuration["RabbitMQ_HostName"]!;
         string userName = _configuration["RabbitMQ_UserName"]!;
@@ -34,7 +33,6 @@ public class RabbitMQConsumer : IRabbitMQConsumer, IDisposable
 
         _connection = connectionFactory.CreateConnection();
         _channel = _connection.CreateModel();
-        _logger = logger;
     }
     public void Consume(string queueName, string routingKey, string messageActionName, Dictionary<string, object> headers)
     {
@@ -52,7 +50,7 @@ public class RabbitMQConsumer : IRabbitMQConsumer, IDisposable
         // EventHandler
         EventingBasicConsumer consumer = new EventingBasicConsumer(_channel); // this responsible for read message from the queue
 
-        consumer.Received += (sender, args) =>
+        consumer.Received += async (sender, args) =>
         {
             byte[] body = args.Body.ToArray();
             // convert into json
@@ -63,17 +61,15 @@ public class RabbitMQConsumer : IRabbitMQConsumer, IDisposable
                 // pass the specific action method into this message 
                 if (messageActionName == "update")
                 {
-                    // josn convert into productupdatename class objects
-                    var productUpdateNameMessage = JsonSerializer.Deserialize<ProductUpdateNameMessage>(message);
-                    _logger.LogInformation($"Product name updated:{productUpdateNameMessage!.ProductID}, New name:{productUpdateNameMessage.NewName}");
+                    // consume new update product added into cache
+                    await _rabbitMQConsumeServicesAction.ProductUpdateMessage(message: message);
+
                 }
                 else if (messageActionName == "delete")
                 {
-                    // josn convert into productDelete class objects
-                    var productDeleteMessage = JsonSerializer.Deserialize<ProductDeleteMessage>(message);
-                    _logger.LogInformation($"Product: {productDeleteMessage!.ProductID} is Deleted:, Deleted ProductName:{productDeleteMessage.DeletedProductName}");
+                    // consume deleted product remove from the cache
+                    await _rabbitMQConsumeServicesAction.ProductDeleteMessage(message: message);
                 }
-
             }
 
         };

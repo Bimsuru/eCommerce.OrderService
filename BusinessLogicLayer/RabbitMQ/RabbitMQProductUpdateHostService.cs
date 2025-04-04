@@ -2,11 +2,11 @@ using Microsoft.Extensions.Hosting;
 
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.RabbitMQ;
 
-public class RabbitMQProductNameUpdateHostService : IHostedService
+public class RabbitMQProductUpdateHostService : IHostedService
 {
     private readonly IRabbitMQConsumer _rabbitMQConsumer;
 
-    public RabbitMQProductNameUpdateHostService(IRabbitMQConsumer rabbitMQConsumer)
+    public RabbitMQProductUpdateHostService(IRabbitMQConsumer rabbitMQConsumer)
     {
         _rabbitMQConsumer = rabbitMQConsumer;
     }
@@ -24,7 +24,6 @@ public class RabbitMQProductNameUpdateHostService : IHostedService
         {
             {"x-match", "all"},
             {"event", "product.update"},
-            {"field", "name"},
             {"RowCount", 1}
         };
 
